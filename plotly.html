@@ -1,0 +1,103 @@
+<head>
+  <!-- Plotly.js -->
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <meta charset="utf-8">
+  <style>
+  body{
+    font-family: sans;
+    padding: 10px;
+  }
+  h1{
+    font-weight: normal;
+    margin: 0;
+    padding-left: 5px;
+    color: #53483e;
+  }
+  p{
+    margin: 0;
+    margin-bottom: 10px;
+    padding-left: 5px;
+    color: #917e6b;
+  }
+  ul{
+    width: 200px;
+    float: left;
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    padding-right: 10px;
+  }
+  li{
+    cursor: pointer;
+    background-color: #c8ad93;
+    padding: 10px;
+    margin: 2px;
+    color: #fff;
+  }
+  </style>
+</head>
+<body>
+  <h1>Joint Distribution</h1>
+  <p>Drag graph to change view</p>
+  <!-- Plotly chart will be drawn inside this DIV -->
+  <div id="graph" style="width:100%;height:100%"></div>
+  <script src="http://d3js.org/d3.v3.min.js"></script>
+  <script>
+    function dataFromFormular(func, x0, y0){
+      var xx = [];
+      var yy = [];
+      var zz = [];
+      for(var x=-2; x<=4; x+=0.1){
+        xx.push(x);
+      }
+      for(var y=-2; y<=4; y+=0.1){
+        yy.push(y);
+      }
+      for(var x=-2; x<=4; x+=0.1){
+        var f0=[];
+        zz.push(f0);
+        for(var y=-2; y<=4; y+=0.1){
+          if (x > x0 || y > y0) {
+            f0.push(0);
+          } else {
+            f0.push(func(x,y));
+          }
+        }
+      }
+      return {
+          x: xx,
+          y: yy,
+          z: zz,
+          type: 'surface',
+      };
+    };
+    function jointDistribution(x,y){
+        return Math.pow(Math.E, -1*(Math.pow((x-1),2) - (x-1)*(y-1) + Math.pow((y-1),2)) / (2*0.75)) / (2*Math.PI*Math.sqrt(0.75));
+    };
+
+    var surfaces=[
+      {
+        name: 'Full Set',
+        data: dataFromFormular(jointDistribution, 1, 4)
+      }
+    ];
+
+    var ul=d3.select('body').append('ul');
+
+    ul.selectAll('li')
+      .data(surfaces)
+      .enter().append('li')
+      .html(function(d){
+        return d.name;
+      })
+
+    var data = [dataFromFormular(jointDistribution, 1, 4)];
+    var layout = {
+      title: 'Joint Distribution',
+      autosize: false,
+      width: 800,
+      height: 600,
+    };
+    Plotly.newPlot('graph', data, layout);
+  </script>
+</body>
