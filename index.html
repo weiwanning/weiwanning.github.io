@@ -55,17 +55,29 @@
     <script>
       var yaw=0.5,pitch=0.5, width=700, height=400, drag=false;
 
-      function dataFromFormular(func, x0, y0){
-        var output=[];
-        for(var x=-2; x<=4; x+=0.1){
-          var f0=[];
+      function dataFromFormular(func, x0, y0) {
+        var output = [];
+        for (var x=-2; x<=4; x+=0.1) {
+          var f0 = [];
           output.push(f0);
-          for(var y=-2; y<=4; y+=0.1){
+          for (var y=-2; y<=4; y+=0.1) {
             if (x > x0 || y > y0) {
               f0.push(0);
             } else {
-              f0.push(func(x,y));
+              f0.push(func(x, y));
             }
+          }
+        }
+        return output;
+      };
+
+      function demandDataFromFormular(func) {
+        var output = [];
+        for (var x=10; x<70; x++) {
+          var f0 = [];
+          output.push(f0);
+          for (var y=40; y<160; y+=2) {
+            f0.push(func(x/10, y));
           }
         }
         return output;
@@ -99,11 +111,24 @@
         {
           name: 'y=1.5',
           data: dataFromFormular(jointDistribution, 4, 1.5)
+        },
+        {
+          name: 'Full Set Real Estate',
+          data: demandDataFromFormular(demandDistribution)
         }
       ];
 
-      function jointDistribution(x,y){
-          return -1000 * Math.pow(Math.E, -1*(Math.pow((x-1),2) - (x-1)*(y-1) + Math.pow((y-1),2)) / (2*0.75)) / (2*Math.PI*Math.sqrt(0.75));
+      function jointDistribution(x, y) {
+        return -1000 * Math.pow(Math.E, -1*(Math.pow((x-1),2) - (x-1)*(y-1) + Math.pow((y-1),2)) / (2*0.75)) / (2*Math.PI*Math.sqrt(0.75));
+      };
+
+      function demandDistribution(x, y) {
+        if (x < 5) {
+          return -60000 * (1800 - x*y) * (x - 1) / (16800 * (180 - 11*x));
+        }
+        if (x >= 5) {
+          return -60000 * (1800 - x*y) * (7 - x) / (8400 * (180 - 11*x));
+        }
       };
 
       var ul=d3.select('body')
@@ -127,7 +152,8 @@
 
       ul.selectAll('li')
         .data(surfaces)
-        .enter().append('li')
+        .enter()
+        .append('li')
         .html(function(d){
           return d.name
         })
