@@ -9,6 +9,7 @@
       if(timer) clearTimeout(timer);
       timer=setTimeout(renderSurface);
     };
+
     var getHeights=function(){
       var data=node.datum();
       var output=[];
@@ -23,12 +24,14 @@
       }
       return output;
     };
+
     var transformPoint=function(point){
       var x=transformPrecalc[0]*point[0]+transformPrecalc[1]*point[1]+transformPrecalc[2]*point[2];
       var y=transformPrecalc[3]*point[0]+transformPrecalc[4]*point[1]+transformPrecalc[5]*point[2];
       var z=transformPrecalc[6]*point[0]+transformPrecalc[7]*point[1]+transformPrecalc[8]*point[2];
       return [x,y,z];
     };
+
     var getTransformedData=function(){
       var data=node.datum();
       if(!heightFunction) return [[]];
@@ -44,6 +47,7 @@
       }
       return output;
     };
+
     var renderSurface=function(){
       var originalData=node.datum();
       var data=getTransformedData();
@@ -54,14 +58,18 @@
       for(var x=0;x<xlength-1;x++){
         for(var y=0;y<ylength-1;y++){
           var depth=data[x][y][2]+data[x+1][y][2]+data[x+1][y+1][2]+data[x][y+1][2];
-          d0.push({
+          var el = {
             path:
               'M'+(data[x][y][0]+displayWidth/2).toFixed(10)+','+(data[x][y][1]+displayHeight/2).toFixed(10)+
               'L'+(data[x+1][y][0]+displayWidth/2).toFixed(10)+','+(data[x+1][y][1]+displayHeight/2).toFixed(10)+
               'L'+(data[x+1][y+1][0]+displayWidth/2).toFixed(10)+','+(data[x+1][y+1][1]+displayHeight/2).toFixed(10)+
               'L'+(data[x][y+1][0]+displayWidth/2).toFixed(10)+','+(data[x][y+1][1]+displayHeight/2).toFixed(10)+'Z',
-            depth: depth, data: originalData[x][y]
-          });
+            depth: depth,
+            data: originalData[x][y],
+            x: x,
+            y: y,
+          };
+          d0.push(el);
         }
       }
       d0.sort(function(a, b){return b.depth-a.depth});
@@ -72,10 +80,13 @@
       }
       dr.attr("d",function(d){return d.path;});
       if(colorFunction){
-        dr.attr("fill",function(d){return colorFunction(d.data)});
+        dr.attr("fill",function(d){
+          return colorFunction(d.data, d.x, d.y)
+        });
       }
       trans=false;
     };
+
     this.renderSurface=renderSurface;
     this.setTurtable=function(yaw, pitch){
       var cosA=Math.cos(pitch);
@@ -124,6 +135,7 @@
       if(width) displayWidth=width;
     };
   };
+
   d3.selection.prototype.surface3D=function(width,height){
     if(!this.node().__surface__) this.node().__surface__=new Surface(this);
     var surface=this.node().__surface__;
